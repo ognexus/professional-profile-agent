@@ -134,7 +134,7 @@ def fetch_url_text(url: str, timeout: int = 15) -> str:
     except requests.exceptions.HTTPError as e:
         raise RuntimeError(f"HTTP error fetching {url}: {e}")
 
-    soup = BeautifulSoup(response.text, "lxml")
+    soup = BeautifulSoup(response.text, "html.parser")
 
     # Remove noise elements
     for tag in soup(["script", "style", "nav", "header", "footer",
