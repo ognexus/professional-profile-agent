@@ -292,7 +292,7 @@ function renderAssessorResults(results) {
       if (!quotes.length) return '';
       return `<div class="evidence-block">
         <div class="evidence-label">${capitalize(key)} — Evidence</div>
-        ${quotes.slice(0, 2).map(q => `<div class="evidence-quote">"${esc(q)}"</div>`).join('')}
+        ${quotes.slice(0, 2).map(q => `<div class="evidence-quote">"${esc(q.quote || q)}"</div>`).join('')}
       </div>`;
     }).join('');
 
