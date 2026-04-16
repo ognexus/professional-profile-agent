@@ -18,7 +18,7 @@ Local dev: uvicorn api.index:app --reload
 from __future__ import annotations
 
 import sys
-import json
+import base64
 import logging
 from pathlib import Path
 from typing import Optional
@@ -32,6 +32,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
+from app.core.claude_client import ClaudeClient
 from app.core.parsers import (
     parse_pdf, parse_docx, parse_pasted_text, fetch_url_text, detect_input_type
 )
@@ -42,6 +43,18 @@ from app.core import storage
 from app.feedback.loop import record_feedback
 
 logger = logging.getLogger(__name__)
+
+# ── Shared client — lazy singleton ───────────────────────────────────────────
+# Initialized on first request so module-level imports don't fail if the
+# API key hasn't been injected into the environment yet (e.g. during tests).
+_claude: ClaudeClient | None = None
+
+
+def _get_client() -> ClaudeClient:
+    global _claude
+    if _claude is None:
+        _claude = ClaudeClient()
+    return _claude
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
@@ -123,7 +136,7 @@ async def assess_candidates(
         raise HTTPException(status_code=422, detail="No valid candidate files uploaded.")
 
     try:
-        pipeline = AssessorPipeline()
+        pipeline = AssessorPipeline(_get_client())
         if len(candidate_dicts) == 1:
             result, record_id = pipeline.assess(
                 jd_text=jd,
@@ -181,7 +194,7 @@ async def curate_profile(
         linkedin = ""  # optional
 
     try:
-        pipeline = CuratorPipeline()
+        pipeline = CuratorPipeline(_get_client())
         curation, record_id = pipeline.curate(
             jd_text=jd,
             current_cv_text=cv,
@@ -192,9 +205,34 @@ async def curate_profile(
         logger.exception("Curation pipeline error")
         raise HTTPException(status_code=500, detail=str(exc))
 
+    # Generate PDFs inline so downloads work even on stateless serverless runtimes
+    # (Vercel Lambda can't guarantee the same SQLite file across invocations).
+    curation_dict = curation.model_dump(mode="json")
+    jd_info = curation_dict.get("jd_extraction", {})
+    cv_pdf_b64 = ""
+    cl_pdf_b64 = ""
+    try:
+        cv_pdf_b64 = base64.b64encode(
+            render_cv_pdf(curation_dict.get("tailored_cv", {}))
+        ).decode()
+    except Exception:
+        logger.warning("CV PDF generation failed — download will fall back to GET endpoint")
+    try:
+        cl_pdf_b64 = base64.b64encode(
+            render_cover_letter_pdf(
+                curation_dict.get("cover_letter", ""),
+                role_title=jd_info.get("role_title", ""),
+                company=jd_info.get("company", ""),
+            )
+        ).decode()
+    except Exception:
+        logger.warning("Cover letter PDF generation failed — download will fall back to GET endpoint")
+
     return JSONResponse(content={
         "record_id": record_id,
-        "curation": curation.model_dump(),
+        "curation": curation_dict,
+        "cv_pdf_b64": cv_pdf_b64,
+        "cl_pdf_b64": cl_pdf_b64,
     })
 
 

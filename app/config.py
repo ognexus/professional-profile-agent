@@ -20,17 +20,22 @@ load_dotenv(_ROOT / ".env", override=False)
 
 def _get(key: str, default: str | None = None) -> str | None:
     """
-    Resolve a config value — env var first, then Streamlit secrets, then default.
-    Streamlit secrets are used when deployed on Streamlit Cloud.
+    Resolve a config value: os.environ first, then Streamlit secrets (only
+    when actually running inside a Streamlit runtime), then the default.
     """
     val = os.getenv(key)
     if val:
         return val
+    # Only attempt st.secrets when a Streamlit ScriptRunContext is active.
+    # This avoids noisy "missing ScriptRunContext" warnings when the config
+    # module is imported from FastAPI or tests.
     try:
-        import streamlit as st
-        secret = st.secrets.get(key)
-        if secret:
-            return str(secret)
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+        if get_script_run_ctx() is not None:
+            import streamlit as st
+            secret = st.secrets.get(key)
+            if secret:
+                return str(secret)
     except Exception:
         pass
     return default

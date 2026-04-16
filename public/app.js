@@ -370,9 +370,18 @@ function renderAssessorResults(results) {
 }
 
 
+// ── Base64 → Blob URL helper for PDF downloads ────────────────────────────────
+
+function b64ToBlobUrl(b64, mimeType) {
+  const bytes = atob(b64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return URL.createObjectURL(new Blob([arr], { type: mimeType }));
+}
+
 // ── Render: Curator results ───────────────────────────────────────────────────
 
-function renderCuratorResults({ record_id, curation: c }) {
+function renderCuratorResults({ record_id, curation: c, cv_pdf_b64, cl_pdf_b64 }) {
   const container = document.getElementById('curator-results');
 
   const jd = c.jd_extraction || {};
@@ -430,7 +439,9 @@ function renderCuratorResults({ record_id, curation: c }) {
     </div>
     <div class="cv-preview">${cvHtml}</div>
     <div class="download-bar">
-      <a href="/api/cv-pdf/${record_id}" download class="btn btn-secondary btn-sm">⬇ Download CV (PDF)</a>
+      ${cv_pdf_b64
+        ? `<a href="${b64ToBlobUrl(cv_pdf_b64, 'application/pdf')}" download="CV_tailored.pdf" class="btn btn-secondary btn-sm">⬇ Download CV (PDF)</a>`
+        : `<a href="/api/cv-pdf/${record_id}" download class="btn btn-secondary btn-sm">⬇ Download CV (PDF)</a>`}
     </div>
   </div>
 
@@ -440,7 +451,9 @@ function renderCuratorResults({ record_id, curation: c }) {
     </div>
     <div class="cover-letter-text">${esc(clText)}</div>
     <div class="download-bar">
-      <a href="/api/cl-pdf/${record_id}" download class="btn btn-secondary btn-sm">⬇ Download Cover Letter (PDF)</a>
+      ${cl_pdf_b64
+        ? `<a href="${b64ToBlobUrl(cl_pdf_b64, 'application/pdf')}" download="Cover_Letter.pdf" class="btn btn-secondary btn-sm">⬇ Download Cover Letter (PDF)</a>`
+        : `<a href="/api/cl-pdf/${record_id}" download class="btn btn-secondary btn-sm">⬇ Download Cover Letter (PDF)</a>`}
     </div>
   </div>
 
