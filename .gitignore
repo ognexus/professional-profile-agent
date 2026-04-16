@@ -38,8 +38,8 @@ desktop.ini
 *.swp
 *.swo
 
-# Streamlit
-.streamlit/
+# Streamlit — only ignore real secrets, not config or example files
+.streamlit/secrets.toml
 
 # weasyprint / reportlab temp files
 *.tmp

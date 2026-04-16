@@ -126,6 +126,42 @@ See [`docs/SKILLS_GUIDE.md`](docs/SKILLS_GUIDE.md) for a full guide on editing a
 
 ---
 
+## Deploying to Streamlit Community Cloud
+
+You can deploy this app so it's accessible on any device (phone, tablet, laptop) without running it locally.
+
+### Prerequisites
+- A [GitHub](https://github.com) account (the repo must be public or you must have Streamlit Cloud access)
+- A [Streamlit Community Cloud](https://share.streamlit.io) account (free)
+- Your Anthropic API key from [console.anthropic.com](https://console.anthropic.com)
+
+### Steps
+
+1. **Fork or push the repo to your GitHub account** (already done if you cloned from `ognexus/professional-profile-agent`)
+
+2. **Go to [share.streamlit.io](https://share.streamlit.io)** → Sign in with GitHub → click **"New app"**
+
+3. **Configure the app:**
+   - Repository: `ognexus/professional-profile-agent`
+   - Branch: `main`
+   - Main file path: `app/streamlit_app.py`
+
+4. **Add secrets** — click **"Advanced settings"** → **"Secrets"** → paste the following (replace with your real API key):
+   ```toml
+   ANTHROPIC_API_KEY = "sk-ant-api03-your-real-key-here"
+   ANTHROPIC_MODEL = "claude-sonnet-4-6"
+   ANTHROPIC_MODEL_FAST = "claude-haiku-4-5-20251001"
+   ```
+   > See `.streamlit/secrets.toml.example` for the full list of available settings.
+
+5. **Click "Deploy"** — Streamlit Cloud installs dependencies from `requirements.txt` and launches the app. First boot takes ~60 seconds.
+
+6. **Share the URL** — the app gets a public URL like `https://ognexus-professional-profile-agent-app-streamlit-app-xxxx.streamlit.app`. Anyone with the link can use it.
+
+> **Privacy note:** The app URL is public by default. For private use, upgrade to a paid Streamlit Cloud plan or run locally.
+
+---
+
 ## Running Tests
 
 ```bash
@@ -151,7 +187,7 @@ python scripts/run_eval.py
 | Storage | SQLite (stdlib) |
 | Document parsing | [pypdf](https://github.com/py-pdf/pypdf), [python-docx](https://python-docx.readthedocs.io) |
 | URL fetching | [requests](https://requests.readthedocs.io) + [BeautifulSoup4](https://beautiful-soup-4.readthedocs.io) |
-| PDF output | [weasyprint](https://weasyprint.org) (optional) |
+| PDF output | [ReportLab](https://reportlab.com) (pure Python, no system libs required) |
 | API layer | [FastAPI](https://fastapi.tiangolo.com) (stub — ready for productisation) |
 
 ---
@@ -176,7 +212,7 @@ python scripts/run_eval.py
 - **Single-user** — no authentication or multi-tenant support in v0.1.0
 - **English only** — prompts and rubrics are English-language
 - **Cost** — approximately $0.10–$0.30 per candidate assessment, $0.20–$0.50 per CV curation (using `claude-sonnet-4-6`)
-- **PDF output** — requires `weasyprint` installed separately (`pip install weasyprint`)
+- **PDF output** — uses ReportLab (pure Python, bundled in requirements.txt — no system libraries needed)
 
 ---
 

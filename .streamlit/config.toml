@@ -1,0 +1,11 @@
+[theme]
+base = "light"
+primaryColor = "#6366f1"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f8fafc"
+textColor = "#1a1a1a"
+font = "sans serif"
+
+[server]
+# Allow large file uploads (candidate PDFs)
+maxUploadSize = 50

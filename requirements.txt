@@ -12,8 +12,7 @@ uvicorn==0.32.1
 pypdf==5.1.0
 python-docx==1.1.2
 
-# CV/cover letter output
-weasyprint==62.3
+# CV/cover letter output (reportlab only — weasyprint removed, requires system libs not on Streamlit Cloud)
 reportlab==4.2.5
 
 # Fuzzy matching (eval harness)
