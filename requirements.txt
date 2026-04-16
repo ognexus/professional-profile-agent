@@ -7,6 +7,7 @@ pydantic==2.10.3
 fastapi==0.115.6
 uvicorn==0.32.1
 python-multipart==0.0.20
+aiofiles==24.1.0
 
 # Document parsing
 pypdf==5.1.0
