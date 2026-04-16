@@ -1,0 +1,30 @@
+# Core
+anthropic==0.40.0
+python-dotenv==1.0.1
+pydantic==2.10.3
+
+# Web / UI
+streamlit==1.41.1
+fastapi==0.115.6
+uvicorn==0.32.1
+
+# Document parsing
+pypdf==5.1.0
+python-docx==1.1.2
+
+# CV/cover letter output
+weasyprint==62.3
+reportlab==4.2.5
+
+# Fuzzy matching (eval harness)
+rapidfuzz==3.10.1
+
+# Testing
+pytest==8.3.4
+pytest-mock==3.14.0
+
+# Utilities
+httpx==0.28.1
+requests==2.32.3
+beautifulsoup4==4.12.3
+lxml==5.3.0
