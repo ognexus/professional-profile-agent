@@ -3,18 +3,17 @@ anthropic==0.40.0
 python-dotenv==1.0.1
 pydantic==2.10.3
 
-# Web / UI
-streamlit==1.41.1
+# Web / API
 fastapi==0.115.6
 uvicorn==0.32.1
+python-multipart==0.0.20
 
 # Document parsing
 pypdf==5.1.0
 python-docx==1.1.2
 
-# CV/cover letter output (reportlab only — weasyprint removed, requires system libs not on Streamlit Cloud)
+# CV/cover letter output (pure Python — no system libs required)
 reportlab==4.2.5
-
 
 # Testing
 pytest==8.3.4

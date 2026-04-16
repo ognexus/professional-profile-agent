@@ -30,13 +30,13 @@ cp .env.example .env
 
 Get a key at [console.anthropic.com](https://console.anthropic.com).
 
-### 3. Run
+### 3. Run locally
 
 ```bash
-streamlit run app/streamlit_app.py
+uvicorn api.index:app --reload
 ```
 
-The app opens at `http://localhost:8501`.
+The app opens at `http://localhost:8000`.
 
 ---
 
@@ -126,39 +126,49 @@ See [`docs/SKILLS_GUIDE.md`](docs/SKILLS_GUIDE.md) for a full guide on editing a
 
 ---
 
-## Deploying to Streamlit Community Cloud
+## Deploying to Vercel
 
-You can deploy this app so it's accessible on any device (phone, tablet, laptop) without running it locally.
+The app runs as a FastAPI server on Vercel. You need a [Vercel Pro](https://vercel.com/pricing) account ($20/month) — the free Hobby tier has a 10-second function timeout which is too short for Claude API calls (typically 20–60 seconds).
 
 ### Prerequisites
-- A [GitHub](https://github.com) account (the repo must be public or you must have Streamlit Cloud access)
-- A [Streamlit Community Cloud](https://share.streamlit.io) account (free)
-- Your Anthropic API key from [console.anthropic.com](https://console.anthropic.com)
+- [Vercel account](https://vercel.com) (Pro plan)
+- [Vercel CLI](https://vercel.com/docs/cli): `npm i -g vercel`
+- Your Anthropic API key
 
 ### Steps
 
-1. **Fork or push the repo to your GitHub account** (already done if you cloned from `ognexus/professional-profile-agent`)
-
-2. **Go to [share.streamlit.io](https://share.streamlit.io)** → Sign in with GitHub → click **"New app"**
-
-3. **Configure the app:**
-   - Repository: `ognexus/professional-profile-agent`
-   - Branch: `main`
-   - Main file path: `app/streamlit_app.py`
-
-4. **Add secrets** — click **"Advanced settings"** → **"Secrets"** → paste the following (replace with your real API key):
-   ```toml
-   ANTHROPIC_API_KEY = "sk-ant-api03-your-real-key-here"
-   ANTHROPIC_MODEL = "claude-sonnet-4-6"
-   ANTHROPIC_MODEL_FAST = "claude-haiku-4-5-20251001"
+1. **Install the Vercel CLI and log in:**
+   ```bash
+   npm i -g vercel
+   vercel login
    ```
-   > See `.streamlit/secrets.toml.example` for the full list of available settings.
 
-5. **Click "Deploy"** — Streamlit Cloud installs dependencies from `requirements.txt` and launches the app. First boot takes ~60 seconds.
+2. **From the project root, run:**
+   ```bash
+   vercel
+   ```
+   Follow the prompts — link to your Vercel account, accept defaults for project name and framework.
 
-6. **Share the URL** — the app gets a public URL like `https://ognexus-professional-profile-agent-app-streamlit-app-xxxx.streamlit.app`. Anyone with the link can use it.
+3. **Set environment variables** (do this once via CLI or in the Vercel dashboard):
+   ```bash
+   vercel env add ANTHROPIC_API_KEY
+   # When prompted, paste your key and select all environments (Production, Preview, Development)
 
-> **Privacy note:** The app URL is public by default. For private use, upgrade to a paid Streamlit Cloud plan or run locally.
+   vercel env add DB_PATH
+   # Value: /tmp/profile_agent.db
+   # (Vercel Lambda has a writable /tmp — history won't persist across cold starts, but core features work)
+   ```
+
+   Or add them in the Vercel dashboard: **Project → Settings → Environment Variables**
+
+4. **Deploy to production:**
+   ```bash
+   vercel --prod
+   ```
+
+5. **Your app is live** at the URL Vercel prints (e.g. `https://professional-profile-agent.vercel.app`). Share it with anyone who needs access.
+
+> **Note on history:** SQLite is stored in `/tmp` on Vercel, which resets on cold starts. Assessments and curations run correctly; the feedback loop history is ephemeral. For persistent history, run locally instead.
 
 ---
 
@@ -181,7 +191,7 @@ python scripts/run_eval.py
 
 | Layer | Technology |
 |-------|-----------|
-| UI | [Streamlit](https://streamlit.io) |
+| UI | Vanilla HTML/CSS/JS (served by FastAPI StaticFiles) |
 | AI | [Anthropic Claude API](https://anthropic.com) (`claude-sonnet-4-6` for analysis, `claude-haiku-4-5` for JD parsing) |
 | Data validation | [Pydantic v2](https://docs.pydantic.dev) |
 | Storage | SQLite (stdlib) |
