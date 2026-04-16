@@ -11,16 +11,20 @@
           "app/**",
           "skills/**",
           "prompts/**",
-          "agents/**",
-          "public/**"
+          "agents/**"
         ]
       }
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api/index.py"
-    }
+    { "src": "/api/(.*)", "dest": "api/index.py" },
+    { "src": "/health", "dest": "api/index.py" },
+    { "src": "/", "dest": "/public/index.html" },
+    { "src": "/(.*\\.(css|js|png|ico|svg|woff2?))", "dest": "/public/$1" },
+    { "src": "/(.*)", "dest": "/public/index.html" }
   ]
 }
